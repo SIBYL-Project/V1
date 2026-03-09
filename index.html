@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIBYL | Analisis + Sinyal Simulasi (FIX ERROR)</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link rel="stylesheet" href="./src/style.css">
+</head>
+
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1> SIBYL - Analisis Data + Sinyal Simulasi</h1>
+      <p style="color: #fafcff;">Data transparan + Sinyal berdasarkan statistik (bukan rekomendasi investasi)</p>
+    </div>
+
+    <!-- RECOMMENDATION BANNER -->
+    <div id="recommendationBanner" class="rec-banner">
+      <div class="rec-title" style="color:#f5eceb;">SINYAL SIMULASI BERDASARKAN DATA</div>
+      <div id="recBox" class="rec-box rec-default"></div>
+      <div id="recDesc" class="rec-desc">Belum ada data. Silakan input data terlebih dahulu.</div>
+      <div class="rec-disclaimer">
+        <b style="color:#f3f092;">⚠️ Semua output berupa sinyal (buy/sell/hold) adalah hasil Simulasi Matematika berdasarkan Data Historis yang diinput. Sinyal ini mencerminkan Peluang Statistik, BUKAN jaminan Kepastian Arah Harga di masa depan. ⚠️</b>
+      </div>
+    </div>
+
+    <!-- Disclaimer dengan overlay -->
+    <div id="disclaimerBox" class="disclaimer">
+      <div id="disclaimerOverlay" class="disclaimer-overlay">
+        <p>⚠️ <strong>PERINGATAN RISIKO PENTING</strong> ⚠️</p>
+        <p>Sebelum menggunakan SIBYL, Anda harus memahami dan menyetujui bahwa:</p>
+        <p style="font-size: 1em;">• Akurasi analisis sangat bergantung pada kualitas data yang dimasukkan<br>
+          • Sistem tidak membaca berita ekonomi, kinerja perusahaan, atau manipulasi pasar<br>
+          • Statistik tidak dapat mendeteksi peristiwa tiba-tiba (Black Swan Event)<br>
+          • Hasil analisis hanya untuk tujuan edukasi dan alat bantu keputusan</p>
+        <button id="agreeButton" class="agree-button" onclick="unlockInputs()">SETUJUI & LANJUTKAN</button>
+      </div>
+      <strong>📚 Peringatan Risiko :</strong>
+      <p>• Akurasi analisis SIBYL sangat bergantung pada kualitas data yang dimasukkan. Penggunaan data yang kurang dari 10 periode atau input angka yang tidak akurat akan menghasilkan proyeksi yang bias dan menyesatkan.</p>
+      <p>• Sistem ini <b>tidak membaca</b> berita ekonomi, kinerja perusahaan, kebijakan politik, maupun manipulasi pasar. Sibyl murni bekerja dalam koridor kuantitatif.</p>
+      <p>• Statistik bekerja berdasarkan distribusi normal. Sistem ini tidak dapat mendeteksi peristiwa yang terjadi tiba-tiba (Black Swan Event).</p>
+      <p>• SIBYL disediakan untuk tujuan <b>Edukasi dan Alat Bantu Keputusan</b>. Pengguna tetap memegang kendali penuh dan tanggung jawab mutlak atas dana yang diinvestasikan. Sangat disarankan untuk mengkombinasikan hasil SIBYL dengan analisis fundamental yang mendalam.</p>
+    </div>
+
+    <!-- Main Row -->
+    <div id="mainContent" class="row blurred">
+      <!-- Left Column -->
+      <div class="left-col">
+        <!-- Input Section -->
+        <div class="card">
+          <div class="card-title">1. Input Data (Minimal 10, Maksimal 30)</div>
+
+          <textarea id="bulkInput" rows="3" placeholder="Contoh: 1500 1520 1515 1540 1530&#10;Boleh pakai titik: 1.500 1.520 1.515"></textarea>
+
+          <div class="btn-group">
+            <button class="btn btn-primary" onclick="prosesData()">Proses Data</button>
+            <button class="btn btn-success" onclick="sampleData()">Contoh Data</button>
+            <button class="btn btn-warning" onclick="resetData()">Reset</button>
+          </div>
+
+          <div id="inputGrid" class="input-grid"></div>
+          <p style="text-align: right; margin-top: 10px; color: aliceblue;" id="dataCount">Jumlah data: 0</p>
+        </div>
+
+        <!-- SIGNAL DETAIL -->
+        <div class="card">
+          <div class="card-title">2. Detail Sinyal Simulasi</div>
+
+          <div id="signalDetails" class="signal-grid">
+            <div class="signal-item signal-neutral">Z-Score: -</div>
+            <div class="signal-item signal-neutral">RSI: -</div>
+            <div class="signal-item signal-neutral">Trend: -</div>
+          </div>
+
+          <div id="signalExplanation" class="interpret-box" style="background: #fcfcfc; padding: 15px; border-radius: 10px;">
+            <div style="font-weight: bold; color: #2b6cb0; margin-bottom: 10px;">Penjelasan Sinyal:</div>
+            <div id="signalText">Belum ada data</div>
+          </div>
+        </div>
+
+        <!-- KESIMPULAN BOX - ELEMEN INI SEBELUMNYA HILANG! -->
+        <div class="card">
+          <div class="card-title">3. KESIMPULAN ANALISIS</div>
+
+          <div class="conclusion-box">
+            <div class="conclusion-title">
+              <span>Kesimpulan Otomatis</span>
+            </div>
+            <div class="conclusion-text" id="conclusionMain">
+              Belum ada data. Silakan input data terlebih dahulu.
+            </div>
+            <div class="conclusion-detail" id="conclusionDetails">
+              <div class="conclusion-item">Mean: -</div>
+              <div class="conclusion-item">Std Dev: -</div>
+              <div class="conclusion-item">RSI: -</div>
+              <div class="conclusion-item">Tren: -</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hasil Analisis -->
+        <div class="card">
+          <div class="card-title">4. Hasil Analisis Utama</div>
+
+          <div class="stat-simple">
+            <div class="stat-box">
+              <div class="stat-label">RATA-RATA (MEAN)</div>
+              <div class="stat-number" id="meanDisplay">-</div>
+              <div>Nilai tengah data</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">STANDAR DEVIASI</div>
+              <div class="stat-number" id="stdDisplay">-</div>
+              <div>Fluktuasi harga</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">RSI (14 HARI)</div>
+              <div class="stat-number" id="rsiDisplay">-</div>
+              <div>Kekuatan tren</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grafik -->
+        <div class="card">
+          <div class="card-title">5. Grafik Pergerakan Harga</div>
+          <div class="chart-container">
+            <canvas id="mainChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Tabel Perhitungan Mean & Standar Deviasi -->
+        <div class="card">
+          <div class="card-title">6. Tabel Perhitungan Mean & Standar Deviasi</div>
+
+          <div class="formula-box">
+            <strong>Rumus Mean (Rata-rata):</strong> μ = jumlah semua data ÷ banyak data<br>
+            <strong>Rumus Standar Deviasi:</strong> σ = √[ Σ(x - μ)² ÷ n ]<br>
+            <small>Artinya: cari selisih tiap data dengan rata-rata, kuadratkan, jumlahkan, bagi n, lalu akar kuadrat.</small>
+          </div>
+
+          <div class="table-container">
+            <table id="stdTable">
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Harga (x)</th>
+                  <th>Selisih (x - μ)</th>
+                  <th>(x - μ)²</th>
+                </tr>
+              </thead>
+              <tbody id="stdBody">
+                <tr>
+                  <td colspan="4" style="text-align: center; padding: 20px;">Belum ada data</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tabel Perhitungan RSI -->
+        <div class="card">
+          <div class="card-title">7. Tabel Perhitungan RSI (14 Periode)</div>
+
+          <div class="formula-box">
+            <strong>Rumus RSI:</strong><br>
+            1. Hitung perubahan harga (hari ini - kemarin)<br>
+            2. Jika positif = Gain, jika negatif = Loss<br>
+            3. Rata-rata Gain dan Loss 14 hari<br>
+            4. RS = Rata-rata Gain ÷ Rata-rata Loss<br>
+            5. RSI = 100 - [100 ÷ (1 + RS)]
+          </div>
+
+          <div class="table-container">
+            <table id="rsiTable">
+              <thead>
+                <tr>
+                  <th>Periode</th>
+                  <th>Harga</th>
+                  <th>Perubahan</th>
+                  <th>Gain</th>
+                  <th>Loss</th>
+                </tr>
+              </thead>
+              <tbody id="rsiBody">
+                <tr>
+                  <td colspan="5" style="text-align: center; padding: 20px;">Butuh minimal 15 data untuk RSI</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column (Sidebar) -->
+      <div class="right-col">
+        <!-- Export Panel -->
+        <div class="card">
+          <div class="card-title">8. Export Laporan (PDF)</div>
+
+          <button class="btn btn-export" onclick="exportFullPDF()">
+            Download PDF (Termasuk Sinyal)
+          </button>
+
+          <button class="btn btn-export" onclick="exportChartPNG()">
+            Download Grafik PNG
+          </button>
+
+          <!-- <p style="font-size: 0.9em; color: #718096; text-align: center;"> -->
+          <p style="font-size: 0.9em; color: #fcfcfc;; text-align: center;">
+            <i>PDF berisi: sinyal + kesimpulan + semua tabel</i>
+          </p>
+        </div>
+
+        <!-- Ringkasan Data -->
+        <div class="card">
+          <div class="card-title">Ringkasan Data</div>
+
+          <div class="summary-grid">
+            <div class="summary-item">
+              <div>Jumlah Data (n)</div>
+              <div style="font-size: 1.3em; font-weight: bold;" id="summaryN">0</div>
+            </div>
+            <div class="summary-item">
+              <div>Nilai Tertinggi</div>
+              <div style="font-size: 1.3em; font-weight: bold;" id="summaryMax">0</div>
+            </div>
+            <div class="summary-item">
+              <div>Nilai Terendah</div>
+              <div style="font-size: 1.3em; font-weight: bold;" id="summaryMin">0</div>
+            </div>
+            <div class="summary-item">
+              <div>Rentang</div>
+              <div style="font-size: 1.3em; font-weight: bold;" id="summaryRange">0</div>
+            </div>
+            <div class="summary-item">
+              <div>Mean (Rata-rata)</div>
+              <div style="font-size: 1.3em; font-weight: bold;" id="summaryMeanVal">0</div>
+            </div>
+            <div class="summary-item">
+              <div>Standar Deviasi</div>
+              <div style="font-size: 1.3em; font-weight: bold;" id="summaryStdVal">0</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Logika Sinyal -->
+        <div class="card">
+          <div class="card-title">Logika Sinyal Simulasi</div>
+
+          <div style="margin-bottom: 15px;">
+            <strong style="font-size: 1.1em; color: #48bb78;">🟢 SINYAL BELI</strong>
+            <p style="font-size: 1.1em; color: aliceblue;">• Z-Score < -1.5 (harga murah)<br>• RSI < 30 (oversold)<br>• Trend mulai naik</p>
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <strong style="font-size: 1.1em; color: #f56565;">🔴 SINYAL JUAL</strong>
+            <p style="font-size: 1.1em; color: aliceblue;">• Z-Score > 1.5 (harga mahal)<br>• RSI > 70 (overbought)<br>• Trend mulai turun</p>
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <strong style="font-size: 1.1em; color: #f6ad55;">🟡 SINYAL TAHAN</strong>
+            <p style="font-size: 1.1em; color: aliceblue;">• Kondisi normal<br>• Tidak ada sinyal kuat</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>© 2026 Sibyl - Sinyal Simulasi Berdasarkan Data (Bukan Rekomendasi Investasi)</p>
+    </div>
+  </div>
+
+  <script src="./src/script.js"></script>
+</body>
+
+</html>
